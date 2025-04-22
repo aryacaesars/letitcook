@@ -1,8 +1,8 @@
 import Image from "next/image"
 import { Search } from "lucide-react"
-import Header from "@/components/Header"
 import Footer from "@/components/Footer"
 import RecipeCard from "@/components/RecipeCard"
+import Header from "@/components/Header"
 
 export default function Home() {
   // Recipe data
@@ -59,7 +59,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-white">
-      <Header />
+    <Header />
 
       <main>
         {/* Hero Section */}
