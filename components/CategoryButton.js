@@ -1,6 +1,7 @@
-export default function CategoryButton({ category, active = false }) {
+export default function CategoryButton({ category, active = false, onClick }) {
   return (
     <button
+      onClick={onClick}
       className={`px-4 py-2 rounded-full transition-colors ${
         active
           ? "bg-orange-500 text-white"

@@ -1,87 +1,48 @@
+'use client'
+
 import Header from "@/components/Header"
 import Footer from "@/components/Footer"
 import RecipeCard from "@/components/RecipeCard"
 import CategoryButton from "@/components/CategoryButton"
+import { useState, useEffect } from "react"
 
 export default function Collection() {
-  // Recipe data
-  const recipes = [
-    {
-      title: "Spaghetti Carbonara",
-      description: "A classic Italian pasta dish with eggs, cheese, pancetta, and black pepper.",
-      time: "25 mins",
-      difficulty: "Medium",
-      image: "/placeholder.svg?height=200&width=400",
-      featured: true,
-    },
-    {
-      title: "Chicken Stir Fry",
-      description: "A quick and healthy stir fry with chicken and colorful vegetables.",
-      time: "20 mins",
-      difficulty: "Easy",
-      image: "/placeholder.svg?height=200&width=400",
-      featured: true,
-    },
-    {
-      title: "Vegetable Curry",
-      description: "A flavorful and aromatic vegetable curry that's perfect for a weeknight dinner.",
-      time: "35 mins",
-      difficulty: "Medium",
-      image: "/placeholder.svg?height=200&width=400",
-      featured: true,
-    },
-    {
-      title: "Classic Beef Burger",
-      description: "Juicy homemade beef burgers with all the fixings.",
-      time: "30 mins",
-      difficulty: "Easy",
-      image: "/placeholder.svg?height=200&width=400",
-      featured: true,
-    },
-    {
-      title: "Mushroom Risotto",
-      description: "Creamy Italian rice dish with mushrooms and parmesan.",
-      time: "40 mins",
-      difficulty: "Medium",
-      image: "/placeholder.svg?height=200&width=400",
-      featured: true,
-    },
-    {
-      title: "Greek Salad",
-      description: "Fresh and healthy Greek salad with feta cheese and olives.",
-      time: "15 mins",
-      difficulty: "Easy",
-      image: "/placeholder.svg?height=200&width=400",
-      featured: true,
-    },
-    {
-      title: "Chocolate Chip Cookies",
-      description: "Delicious homemade chocolate chip cookies that are soft and chewy.",
-      time: "25 mins",
-      difficulty: "Easy",
-      image: "/placeholder.svg?height=200&width=400",
-      featured: true,
-    },
-    {
-      title: "Banana Bread",
-      description: "Moist and delicious banana bread with a hint of cinnamon.",
-      time: "60 mins",
-      difficulty: "Easy",
-      image: "/placeholder.svg?height=200&width=400",
-      featured: true,
-    },
-    {
-      title: "Chocolate Lava Cake",
-      description: "Decadent chocolate cake with a molten center.",
-      time: "20 mins",
-      difficulty: "Easy",
-      image: "/placeholder.svg?height=200&width=400",
-      featured: true,
-    },
+  const [recipes, setRecipes] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  // Categories mapping to Spoonacular types
+  const categories = [
+    { name: "All", type: "main course" },
+    { name: "Breakfast", type: "breakfast" },
+    { name: "Lunch", type: "lunch" },
+    { name: "Dinner", type: "dinner" },
+    { name: "Dessert", type: "dessert" }
   ]
 
-  // Categories
-  const categories = ["All", "Breakfast", "Lunch", "Dinner", "Meal", "Diet", "Vegan"]
+  const [selectedCategory, setSelectedCategory] = useState(categories[0])
+
+  useEffect(() => {
+    const fetchRecipes = async () => {
+      try {
+        setLoading(true)
+        const response = await fetch(`/api/recipes?type=${selectedCategory.type}`)
+        if (!response.ok) {
+          throw new Error('Failed to fetch recipes')
+        }
+        const data = await response.json()
+        setRecipes(data.results || [])
+        setError(null)
+      } catch (err) {
+        setError(err.message)
+        console.error('Error fetching recipes:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchRecipes()
+  }, [selectedCategory])
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -92,26 +53,38 @@ export default function Collection() {
           <h2 className="text-2xl font-bold mb-4">Select Categories</h2>
           <div className="flex flex-wrap gap-2">
             {categories.map((category, index) => (
-              <CategoryButton key={index} category={category} active={category === "All"} />
+              <CategoryButton 
+                key={index} 
+                category={category.name} 
+                active={category.name === selectedCategory.name}
+                onClick={() => setSelectedCategory(category)}
+              />
             ))}
           </div>
         </section>
 
         <section>
           <h2 className="text-2xl font-bold mb-6">Featured Recipes</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {recipes.map((recipe, index) => (
-              <RecipeCard
-                key={index}
-                title={recipe.title}
-                description={recipe.description}
-                time={recipe.time}
-                difficulty={recipe.difficulty}
-                image={recipe.image}
-                featured={recipe.featured}
-              />
-            ))}
-          </div>
+          {loading ? (
+            <div className="text-center py-8">Loading recipes...</div>
+          ) : error ? (
+            <div className="text-center py-8 text-red-500">{error}</div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {recipes.map((recipe) => (
+                <RecipeCard
+                  key={recipe.id}
+                  id={recipe.id}
+                  title={recipe.title}
+                  description={recipe.summary}
+                  time={`${recipe.readyInMinutes} mins`}
+                  difficulty={recipe.dishTypes?.[0] || "Medium"}
+                  image={recipe.image}
+                  featured={true}
+                />
+              ))}
+            </div>
+          )}
         </section>
       </main>
 
