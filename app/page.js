@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image"
 import { Search, Loader2 } from "lucide-react"
 import { motion } from "framer-motion"
@@ -8,6 +8,7 @@ import Footer from "@/components/Footer"
 import RecipeCard from "@/components/RecipeCard"
 import Header from "@/components/Header"
 import { searchRecipesByIngredients, getRecipeInformation } from "@/lib/spoonacular";
+import HowItWorks from "@/components/HowItWorks"
 
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -15,9 +16,114 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [searchAttempted, setSearchAttempted] = useState(false);
+  const [recommendations, setRecommendations] = useState([]);
+  const [showRecommendations, setShowRecommendations] = useState(false);
+  const [enteredIngredients, setEnteredIngredients] = useState([]);
+  const [selectedIndex, setSelectedIndex] = useState(-1);
+
+  // Common ingredients for recommendations
+  const commonIngredients = [
+    "chicken", "beef", "pork", "fish", "rice", "pasta", "potato", "tomato",
+    "onion", "garlic", "carrot", "bell pepper", "broccoli", "spinach", "egg",
+    "milk", "cheese", "butter", "flour", "sugar", "salt", "pepper", "olive oil"
+  ];
+
+  // Reset selected index when recommendations change
+  useEffect(() => {
+    setSelectedIndex(-1);
+  }, [recommendations]);
+
+  // Filter recommendations based on search query
+  useEffect(() => {
+    if (searchQuery.trim()) {
+      const filtered = commonIngredients.filter(ingredient =>
+        ingredient.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      setRecommendations(filtered.slice(0, 5));
+      setShowRecommendations(true);
+    } else {
+      setRecommendations([]);
+      setShowRecommendations(false);
+    }
+  }, [searchQuery]);
+
+  const handleRecommendationClick = (ingredient) => {
+    if (!enteredIngredients.includes(ingredient)) {
+      setEnteredIngredients([...enteredIngredients, ingredient]);
+    }
+    setSearchQuery("");
+    setShowRecommendations(false);
+  };
+
+  const handleKeyDown = (e) => {
+    if (!showRecommendations || recommendations.length === 0) return;
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setSelectedIndex((prev) => 
+          prev < recommendations.length - 1 ? prev + 1 : prev
+        );
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setSelectedIndex((prev) => 
+          prev > 0 ? prev - 1 : 0
+        );
+        break;
+      case 'Enter':
+        e.preventDefault();
+        if (selectedIndex >= 0 && selectedIndex < recommendations.length) {
+          handleRecommendationClick(recommendations[selectedIndex]);
+        } else {
+          handleEnterKey(e);
+        }
+        break;
+    }
+  };
+
+  const handleInputChange = (e) => {
+    const value = e.target.value;
+    setSearchQuery(value);
+    
+    // If the last character is a comma, add the ingredient
+    if (value.endsWith(',')) {
+      const newIngredient = value.slice(0, -1).trim();
+      if (newIngredient && !enteredIngredients.includes(newIngredient)) {
+        setEnteredIngredients([...enteredIngredients, newIngredient]);
+        setSearchQuery('');
+      }
+    }
+  };
+
+  const handleEnterKey = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      if (searchQuery.trim()) {
+        const newIngredient = searchQuery.trim();
+        if (!enteredIngredients.includes(newIngredient)) {
+          setEnteredIngredients([...enteredIngredients, newIngredient]);
+        }
+        setSearchQuery("");
+        setShowRecommendations(false);
+      }
+    }
+  };
+
+  const removeIngredient = (ingredientToRemove) => {
+    setEnteredIngredients(enteredIngredients.filter(ing => ing !== ingredientToRemove));
+  };
+
+  const clearAllIngredients = () => {
+    setEnteredIngredients([]);
+    setSearchQuery("");
+    setError(null);
+    setRecipes([]);
+    setSearchAttempted(false);
+  };
 
   const handleSearch = async () => {
-    if (!searchQuery.trim()) {
+    if (enteredIngredients.length === 0) {
       setError("Please enter some ingredients");
       return;
     }
@@ -27,7 +133,7 @@ export default function Home() {
     setSearchAttempted(true);
     
     try {
-      const ingredients = searchQuery.split(",").map(ing => ing.trim()).join(",");
+      const ingredients = enteredIngredients.join(",");
       console.log('Searching for recipes with ingredients:', ingredients);
       
       const results = await searchRecipesByIngredients(ingredients);
@@ -106,25 +212,81 @@ export default function Home() {
             <input
               type="text"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyPress={(e) => e.key === "Enter" && handleSearch()}
+              onChange={handleInputChange}
+              onKeyDown={handleKeyDown}
+              onFocus={() => setShowRecommendations(true)}
+              onBlur={() => setTimeout(() => setShowRecommendations(false), 200)}
               placeholder="Enter ingredients you have (e.g. chicken, rice, onion)"
-              className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-orange-500 relative z-10 bg-white/80 backdrop-blur-sm"
+              className="w-full px-4 py-3 pr-24 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-orange-500 relative z-10 bg-white/80 backdrop-blur-sm"
               disabled={loading}
             />
-            <button 
-              onClick={handleSearch}
-              disabled={loading}
-              className="absolute right-1 top-1/2 -translate-y-1/2 bg-orange-500 p-2 rounded-full text-white hover:bg-orange-600 disabled:bg-orange-300 z-10"
-            >
-              {loading ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
-              ) : (
-                <Search className="h-5 w-5" />
+            <div className="absolute right-1 top-1/2 -translate-y-1/2 flex gap-1 z-10">
+              {enteredIngredients.length > 0 && (
+                <button 
+                  onClick={clearAllIngredients}
+                  disabled={loading}
+                  className="bg-gray-200 p-2 rounded-full text-gray-600 hover:bg-gray-300 disabled:bg-gray-100"
+                  title="Clear all ingredients"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M3 6h18"/>
+                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
+                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+                  </svg>
+                </button>
               )}
-            </button>
+              <button 
+                onClick={handleSearch}
+                disabled={loading}
+                className="bg-orange-500 p-2 rounded-full text-white hover:bg-orange-600 disabled:bg-orange-300"
+              >
+                {loading ? (
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                ) : (
+                  <Search className="h-5 w-5" />
+                )}
+              </button>
+            </div>
+
+            {/* Recommendations Dropdown */}
+            {showRecommendations && recommendations.length > 0 && (
+              <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-20">
+                {recommendations.map((ingredient, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleRecommendationClick(ingredient)}
+                    className={`w-full px-4 py-2 text-left hover:bg-gray-100 focus:bg-gray-100 focus:outline-none ${
+                      index === selectedIndex ? 'bg-orange-50' : ''
+                    }`}
+                  >
+                    {ingredient}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
-          <p className="text-sm text-gray-500 mb-6">Separate ingredients with commas for better results</p>
+
+          {/* Entered Ingredients Tags */}
+          {enteredIngredients.length > 0 && (
+            <div className="flex flex-wrap justify-center gap-2 mb-6">
+              {enteredIngredients.map((ingredient, index) => (
+                <div
+                  key={index}
+                  className="flex items-center gap-1 bg-orange-100 text-orange-800 px-3 py-1 rounded-full"
+                >
+                  <span>{ingredient}</span>
+                  <button
+                    onClick={() => removeIngredient(ingredient)}
+                    className="text-orange-600 hover:text-orange-800"
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <p className="text-sm text-gray-500 mb-6">Press Enter to add ingredients, then click search</p>
 
           {/* Food Images */}
           <div className="relative max-w-4xl mx-auto -mt-16 md:-mt-24">
@@ -195,21 +357,6 @@ export default function Home() {
             </div>
           )}
 
-          {/* Filter Buttons */}
-          <div className="flex flex-wrap justify-center gap-4 mb-16">
-            <button className="flex items-center gap-2 px-4 py-2 rounded-full border border-orange-500 text-orange-500 hover:bg-orange-50">
-              <span className="h-2 w-2 bg-orange-500 rounded-full"></span>
-              Popular Ingredients
-            </button>
-            <button className="flex items-center gap-2 px-4 py-2 rounded-full border border-blue-500 text-blue-500 hover:bg-blue-50">
-              <span className="h-2 w-2 bg-blue-500 rounded-full"></span>
-              Seasonal Recipes
-            </button>
-            <button className="flex items-center gap-2 px-4 py-2 rounded-full border border-purple-500 text-purple-500 hover:bg-purple-50">
-              <span className="h-2 w-2 bg-purple-500 rounded-full"></span>
-              Quick Meals
-            </button>
-          </div>
         </section>
 
         {/* Featured Recipes */}
@@ -239,32 +386,7 @@ export default function Home() {
         )}
 
         {/* How It Works */}
-        <section className="container mx-auto px-4 py-16 bg-white rounded-lg">
-          <h3 className="text-2xl font-bold mb-12 text-center">How It Works</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="flex flex-col items-center text-center">
-              <div className="bg-orange-50 w-16 h-16 rounded-full flex items-center justify-center mb-6">
-                <span className="text-xl font-bold text-orange-500">1</span>
-              </div>
-              <h4 className="text-lg font-bold mb-2">Enter Your Ingredients</h4>
-              <p className="text-gray-600">Type in the ingredients you have available in your kitchen</p>
-            </div>
-            <div className="flex flex-col items-center text-center">
-              <div className="bg-orange-50 w-16 h-16 rounded-full flex items-center justify-center mb-6">
-                <span className="text-xl font-bold text-orange-500">2</span>
-              </div>
-              <h4 className="text-lg font-bold mb-2">Discover Recipes</h4>
-              <p className="text-gray-600">We'll show you recipes you can make with what you have</p>
-            </div>
-            <div className="flex flex-col items-center text-center">
-              <div className="bg-orange-50 w-16 h-16 rounded-full flex items-center justify-center mb-6">
-                <span className="text-xl font-bold text-orange-500">3</span>
-              </div>
-              <h4 className="text-lg font-bold mb-2">Start Cooking</h4>
-              <p className="text-gray-600">Follow the recipe and enjoy your homemade meal</p>
-            </div>
-          </div>
-        </section>
+        <HowItWorks />
       </main>
 
       <Footer />
