@@ -9,6 +9,8 @@ import RecipeCard from "@/components/RecipeCard"
 import Header from "@/components/Header"
 import { searchRecipesByIngredients, getRecipeInformation } from "@/lib/spoonacular";
 import HowItWorks from "@/components/HowItWorks"
+import SearchBar from "@/components/SearchBar";
+import commonIngredientsData from "@/lib/commonIngredients.json";
 
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -21,12 +23,8 @@ export default function Home() {
   const [enteredIngredients, setEnteredIngredients] = useState([]);
   const [selectedIndex, setSelectedIndex] = useState(-1);
 
-  // Common ingredients for recommendations
-  const commonIngredients = [
-    "chicken", "beef", "pork", "fish", "rice", "pasta", "potato", "tomato",
-    "onion", "garlic", "carrot", "bell pepper", "broccoli", "spinach", "egg",
-    "milk", "cheese", "butter", "flour", "sugar", "salt", "pepper", "olive oil"
-  ];
+  // Gunakan data dari JSON
+  const commonIngredients = commonIngredientsData.ingredients;
 
   // Reset selected index when recommendations change
   useEffect(() => {
@@ -193,6 +191,16 @@ export default function Home() {
     }
   };
 
+  // Tambahkan useEffect untuk navigasi
+  useEffect(() => {
+    if (!loading && recipes.length > 0) {
+      const searchResultsSection = document.getElementById("search-results");
+      if (searchResultsSection) {
+        searchResultsSection.scrollIntoView({ behavior: "smooth" });
+      }
+    }
+  }, [loading, recipes]);
+
   return (
     <div className="min-h-screen bg-white">
     <Header />
@@ -207,63 +215,60 @@ export default function Home() {
             Find delicious recipes with ingredients you already have in your kitchen
           </p>
 
-          {/* Search Bar */}
-          <div className="relative max-w-2xl mx-auto mb-2">
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={handleInputChange}
-              onKeyDown={handleKeyDown}
-              onFocus={() => setShowRecommendations(true)}
-              onBlur={() => setTimeout(() => setShowRecommendations(false), 200)}
-              placeholder="Enter ingredients you have (e.g. chicken, rice, onion)"
-              className="w-full px-4 py-3 pr-24 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-orange-500 relative z-10 bg-white/80 backdrop-blur-sm"
-              disabled={loading}
-            />
-            <div className="absolute right-1 top-1/2 -translate-y-1/2 flex gap-1 z-10">
-              {enteredIngredients.length > 0 && (
-                <button 
-                  onClick={clearAllIngredients}
-                  disabled={loading}
-                  className="bg-gray-200 p-2 rounded-full text-gray-600 hover:bg-gray-300 disabled:bg-gray-100"
-                  title="Clear all ingredients"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M3 6h18"/>
-                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
-                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
-                  </svg>
-                </button>
-              )}
-              <button 
-                onClick={handleSearch}
-                disabled={loading}
-                className="bg-orange-500 p-2 rounded-full text-white hover:bg-orange-600 disabled:bg-orange-300"
-              >
-                {loading ? (
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                ) : (
-                  <Search className="h-5 w-5" />
-                )}
-              </button>
-            </div>
+          {/* Search Bar and Images */}
+          <div className="relative max-w-7xl mx-auto mb-2 flex items-center gap-4">
+            {/* Food Images */}
+            <motion.div 
+              initial={{ x: -50, opacity: 0 }}
+              animate={{ x: 0, opacity: 0.8 }}
+              transition={{ 
+                type: "tween",
+                duration: 0.6,
+                ease: "easeOut"
+              }}
+              whileHover={{ opacity: 1 }}
+              className="w-1/4 blur-[1px] hover:blur-none transition-all duration-300"
+            >
+              <Image
+                src="/burger.png"
+                alt="Burger"
+                width={600} // Updated width
+                height={600} // Updated height
+                className="w-full h-auto"
+                priority
+              />
+            </motion.div>
 
-            {/* Recommendations Dropdown */}
-            {showRecommendations && recommendations.length > 0 && (
-              <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-20">
-                {recommendations.map((ingredient, index) => (
-                  <button
-                    key={index}
-                    onClick={() => handleRecommendationClick(ingredient)}
-                    className={`w-full px-4 py-2 text-left hover:bg-gray-100 focus:bg-gray-100 focus:outline-none ${
-                      index === selectedIndex ? 'bg-orange-50' : ''
-                    }`}
-                  >
-                    {ingredient}
-                  </button>
-                ))}
-              </div>
-            )}
+            {/* Search Bar */}
+            <SearchBar
+              enteredIngredients={enteredIngredients}
+              setEnteredIngredients={setEnteredIngredients}
+              handleSearch={handleSearch}
+              loading={loading}
+              clearAllIngredients={clearAllIngredients}
+            />
+
+            {/* Second Image */}
+            <motion.div 
+              initial={{ x: 50, opacity: 0 }}
+              animate={{ x: 0, opacity: 0.8 }}
+              transition={{ 
+                type: "tween",
+                duration: 0.6,
+                ease: "easeOut"
+              }}
+              whileHover={{ opacity: 1 }}
+              className="w-1/4 blur-[1px] hover:blur-none transition-all duration-300"
+            >
+              <Image
+                src="/salad.png"
+                alt="Bowl"
+                width={600} // Updated width
+                height={600} // Updated height
+                className="w-full h-auto"
+                priority
+              />
+            </motion.div>
           </div>
 
           {/* Entered Ingredients Tags */}
@@ -287,50 +292,6 @@ export default function Home() {
           )}
 
           <p className="text-sm text-gray-500 mb-6">Press Enter to add ingredients, then click search</p>
-
-          {/* Food Images */}
-          <div className="relative max-w-4xl mx-auto -mt-16 md:-mt-24">
-            <motion.div 
-              initial={{ x: -50, opacity: 0 }}
-              animate={{ x: 0, opacity: 0.8 }}
-              transition={{ 
-                type: "tween",
-                duration: 0.6,
-                ease: "easeOut"
-              }}
-              whileHover={{ opacity: 1 }}
-              className="absolute left-0 top-0 w-1/3 md:w-1/4 blur-[1px] hover:blur-none transition-all duration-300"
-            >
-              <Image
-                src="/burger.png"
-                alt="Burger"
-                width={250}
-                height={250}
-                className="w-full h-auto"
-                priority
-              />
-            </motion.div>
-            <motion.div 
-              initial={{ x: 50, opacity: 0 }}
-              animate={{ x: 0, opacity: 0.8 }}
-              transition={{ 
-                type: "tween",
-                duration: 0.6,
-                ease: "easeOut"
-              }}
-              whileHover={{ opacity: 1 }}
-              className="absolute right-0 top-0 w-1/3 md:w-1/4 blur-[1px] hover:blur-none transition-all duration-300"
-            >
-              <Image
-                src="/salad.png"
-                alt="Bowl"
-                width={250}
-                height={250}
-                className="w-full h-auto"
-                priority
-              />
-            </motion.div>
-          </div>
 
           {/* Loading and Error States */}
           {loading && (
@@ -361,7 +322,7 @@ export default function Home() {
 
         {/* Featured Recipes */}
         {recipes.length > 0 && (
-          <section className="container mx-auto px-4 py-16 mt-24">
+          <section id="search-results" className="container mx-auto px-4 py-16 mt-24">
             <h3 className="text-2xl font-bold mb-8">Found Recipes</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {recipes.map((recipe) => {
