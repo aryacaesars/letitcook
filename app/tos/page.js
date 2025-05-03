@@ -1,10 +1,7 @@
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
 
 export default function TermsOfService() {
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-b from-gray-100 to-gray-50">
-      <Header />
       <main className="container flex-grow px-6 py-12 mx-auto">
         <div className="max-w-4xl mx-auto">
           <h1 className="mb-8 text-5xl font-extrabold text-center text-gray-800">
@@ -87,7 +84,6 @@ export default function TermsOfService() {
           </div>
         </div>
       </main>
-      <Footer />
     </div>
   );
 }
