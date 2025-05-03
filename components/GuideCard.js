@@ -1,24 +1,31 @@
-import Image from "next/image"
+import Image from "next/image";
 
-export default function GuideCard({ title, description, image }) {
+export default function GuideCard({ title, description, image, link }) {
   return (
-    <div className="bg-white rounded-lg overflow-hidden shadow-md">
+    <div className="overflow-hidden transition-shadow bg-white rounded-lg shadow-md hover:shadow-lg">
       <div className="relative">
         <Image
           src={image || "/placeholder.svg?height=200&width=400"}
           alt={title}
           width={400}
           height={200}
-          className="w-full h-48 object-cover"
+          className="object-cover w-full h-48"
         />
       </div>
       <div className="p-4">
-        <h4 className="font-bold text-lg mb-1">{title}</h4>
-        <p className="text-gray-600 text-sm mb-3">{description}</p>
-        <button className="w-full bg-orange-500 text-white py-2 rounded hover:bg-orange-600 transition-colors">
-          Read Guide
-        </button>
+        <h4 className="mb-2 text-xl font-bold text-gray-800">{title}</h4>
+        <p className="mb-4 text-sm leading-relaxed text-gray-600">{description}</p>
+        {link && (
+          <a
+            href={link}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block w-full py-2 text-sm font-semibold text-center text-white transition-colors bg-orange-500 rounded hover:bg-orange-600"
+          >
+            Watch Tutorial
+          </a>
+        )}
       </div>
     </div>
-  )
+  );
 }
