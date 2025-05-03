@@ -1,17 +1,21 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Search, Loader2 } from "lucide-react";
 import commonIngredientsData from "@/lib/commonIngredients.json"; // Impor file JSON
 
 export default function SearchBar({
+  searchQuery,
+  setSearchQuery,
   enteredIngredients,
   setEnteredIngredients,
+  setShowRecommendations,
+  setError,
+  setRecipes,
+  setSearchAttempted,
   handleSearch,
   loading,
-  clearAllIngredients,
 }) {
-  const [searchQuery, setSearchQuery] = useState("");
   const [recommendations, setRecommendations] = useState([]);
-  const [showRecommendations, setShowRecommendations] = useState(false);
+  const [showRecommendations, setShowRecommendationsState] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
 
   // Gunakan data dari JSON
@@ -24,10 +28,10 @@ export default function SearchBar({
         id.toLowerCase().includes(searchQuery.toLowerCase())
       );
       setRecommendations(filtered.slice(0, 5));
-      setShowRecommendations(true);
+      setShowRecommendationsState(true);
     } else {
       setRecommendations([]);
-      setShowRecommendations(false);
+      setShowRecommendationsState(false);
     }
   }, [searchQuery]);
 
@@ -36,7 +40,7 @@ export default function SearchBar({
       setEnteredIngredients([...enteredIngredients, ingredient.en]);
     }
     setSearchQuery("");
-    setShowRecommendations(false);
+    setShowRecommendationsState(false);
   };
 
   const handleKeyDown = (e) => {
@@ -64,6 +68,32 @@ export default function SearchBar({
     }
   };
 
+  const handleEnterKey = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      if (searchQuery.trim()) {
+        const newIngredient = searchQuery.trim();
+        if (!enteredIngredients.includes(newIngredient)) {
+          setEnteredIngredients([...enteredIngredients, newIngredient]);
+        }
+        setSearchQuery("");
+        setShowRecommendations(false);
+      }
+    }
+  };
+
+  const removeIngredient = (ingredientToRemove) => {
+    setEnteredIngredients(enteredIngredients.filter(ing => ing !== ingredientToRemove));
+  };
+
+  const clearAllIngredients = () => {
+    setEnteredIngredients([]);
+    setSearchQuery("");
+    setError && setError(null);
+    setRecipes && setRecipes([]);
+    setSearchAttempted && setSearchAttempted(false);
+  };
+
   const handleInputChange = (e) => {
     setSearchQuery(e.target.value);
   };
@@ -75,8 +105,8 @@ export default function SearchBar({
         value={searchQuery}
         onChange={handleInputChange}
         onKeyDown={handleKeyDown}
-        onFocus={() => setShowRecommendations(true)}
-        onBlur={() => setTimeout(() => setShowRecommendations(false), 200)}
+        onFocus={() => setShowRecommendationsState(true)}
+        onBlur={() => setTimeout(() => setShowRecommendationsState(false), 200)}
         placeholder="Enter ingredients you have (e.g. chicken, rice, onion)"
         className="w-full px-4 py-3 pr-24 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-orange-500 relative z-10 bg-white/80 backdrop-blur-sm"
         disabled={loading}

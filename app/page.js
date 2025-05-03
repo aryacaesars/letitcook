@@ -34,9 +34,8 @@ export default function Home() {
   // Filter recommendations based on search query
   useEffect(() => {
     if (searchQuery.trim()) {
-      const filtered = commonIngredients.filter(ingredient =>
-        ingredient.toLowerCase().includes(searchQuery.toLowerCase())
-      );
+      const filtered = commonIngredients
+        .filter(ingredient => typeof ingredient === "string" && ingredient.toLowerCase().includes(searchQuery.toLowerCase()));
       setRecommendations(filtered.slice(0, 5));
       setShowRecommendations(true);
     } else {
@@ -44,55 +43,6 @@ export default function Home() {
       setShowRecommendations(false);
     }
   }, [searchQuery]);
-
-  const handleRecommendationClick = (ingredient) => {
-    if (!enteredIngredients.includes(ingredient)) {
-      setEnteredIngredients([...enteredIngredients, ingredient]);
-    }
-    setSearchQuery("");
-    setShowRecommendations(false);
-  };
-
-  const handleKeyDown = (e) => {
-    if (!showRecommendations || recommendations.length === 0) return;
-
-    switch (e.key) {
-      case 'ArrowDown':
-        e.preventDefault();
-        setSelectedIndex((prev) => 
-          prev < recommendations.length - 1 ? prev + 1 : prev
-        );
-        break;
-      case 'ArrowUp':
-        e.preventDefault();
-        setSelectedIndex((prev) => 
-          prev > 0 ? prev - 1 : 0
-        );
-        break;
-      case 'Enter':
-        e.preventDefault();
-        if (selectedIndex >= 0 && selectedIndex < recommendations.length) {
-          handleRecommendationClick(recommendations[selectedIndex]);
-        } else {
-          handleEnterKey(e);
-        }
-        break;
-    }
-  };
-
-  const handleInputChange = (e) => {
-    const value = e.target.value;
-    setSearchQuery(value);
-    
-    // If the last character is a comma, add the ingredient
-    if (value.endsWith(',')) {
-      const newIngredient = value.slice(0, -1).trim();
-      if (newIngredient && !enteredIngredients.includes(newIngredient)) {
-        setEnteredIngredients([...enteredIngredients, newIngredient]);
-        setSearchQuery('');
-      }
-    }
-  };
 
   const handleEnterKey = (e) => {
     if (e.key === "Enter") {
@@ -241,11 +191,15 @@ export default function Home() {
 
             {/* Search Bar */}
             <SearchBar
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
               enteredIngredients={enteredIngredients}
               setEnteredIngredients={setEnteredIngredients}
+              setShowRecommendations={setShowRecommendations}
+              setError={setError}
+              setRecipes={setRecipes}
+              setSearchAttempted={setSearchAttempted}
               handleSearch={handleSearch}
-              loading={loading}
-              clearAllIngredients={clearAllIngredients}
             />
 
             {/* Second Image */}
