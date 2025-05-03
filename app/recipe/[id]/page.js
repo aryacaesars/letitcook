@@ -2,9 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { getRecipeInformation } from "@/lib/spoonacular";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
+import { getRecipeInformation } from "@/lib/spoonacular"; 
 import { Loader2 } from "lucide-react";
 
 export default function RecipeDetail() {
@@ -50,12 +48,10 @@ export default function RecipeDetail() {
   if (loading) {
     return (
       <div className="min-h-screen bg-white">
-        <Header />
         <div className="container mx-auto px-4 py-12 text-center">
           <Loader2 className="h-12 w-12 animate-spin mx-auto text-orange-500" />
           <p className="mt-4 text-gray-600">Loading recipe details...</p>
         </div>
-        <Footer />
       </div>
     );
   }
@@ -63,7 +59,6 @@ export default function RecipeDetail() {
   if (error) {
     return (
       <div className="min-h-screen bg-white">
-        <Header />
         <div className="container mx-auto px-4 py-12 text-center">
           <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md mx-auto">
             <h2 className="text-xl font-semibold text-red-700 mb-2">Error</h2>
@@ -76,7 +71,6 @@ export default function RecipeDetail() {
             </button>
           </div>
         </div>
-        <Footer />
       </div>
     );
   }
@@ -84,7 +78,6 @@ export default function RecipeDetail() {
   if (!recipe) {
     return (
       <div className="min-h-screen bg-white">
-        <Header />
         <div className="container mx-auto px-4 py-12 text-center">
           <div className="bg-gray-50 text-gray-600 p-4 rounded-lg max-w-md mx-auto">
             Recipe not found
@@ -96,14 +89,12 @@ export default function RecipeDetail() {
             Back to Home
           </button>
         </div>
-        <Footer />
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-white">
-      <Header />
       <main className="container mx-auto px-4 py-12">
         <div className="max-w-4xl mx-auto">
           <button
@@ -172,7 +163,6 @@ export default function RecipeDetail() {
           )}
         </div>
       </main>
-      <Footer />
     </div>
   );
 } 

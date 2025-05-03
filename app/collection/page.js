@@ -1,7 +1,5 @@
 'use client'
 
-import Header from "@/components/Header"
-import Footer from "@/components/Footer"
 import RecipeCard from "@/components/RecipeCard"
 import CategoryButton from "@/components/CategoryButton"
 import { useState, useEffect } from "react"
@@ -46,8 +44,6 @@ export default function Collection() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header />
-
       <main className="container mx-auto px-4 py-8">
         <section className="mb-8">
           <h2 className="text-2xl font-bold mb-4">Select Categories</h2>
@@ -87,8 +83,6 @@ export default function Collection() {
           )}
         </section>
       </main>
-
-      <Footer />
     </div>
   )
 }

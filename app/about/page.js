@@ -1,6 +1,4 @@
 "use client";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
 
 export default function AboutPage() {
   const teamMembers = [
@@ -14,7 +12,6 @@ export default function AboutPage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-white">
-      <Header />
       <main className="container flex-grow p-6 mx-auto">
         <h1 className="mb-6 text-5xl font-extrabold text-center text-gray-800">
           About Us
@@ -42,7 +39,6 @@ export default function AboutPage() {
           ))}
         </div>
       </main>
-      <Footer />
     </div>
   );
 }

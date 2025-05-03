@@ -1,5 +1,3 @@
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
 import TechniqueCard from "@/components/TechniqueCard";
 import GuideCard from "@/components/GuideCard";
 
@@ -83,8 +81,6 @@ export default function Education() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header />
-
       <main className="container px-4 py-8 mx-auto">
         <section className="mb-12">
           <h1 className="mb-4 text-4xl font-bold text-center text-gray-800">Cooking Education</h1>
@@ -120,8 +116,6 @@ export default function Education() {
           </div>
         </section>
       </main>
-
-      <Footer />
     </div>
   );
 }

@@ -4,9 +4,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image"
 import { Search, Loader2 } from "lucide-react"
 import { motion } from "framer-motion"
-import Footer from "@/components/Footer"
 import RecipeCard from "@/components/RecipeCard"
-import Header from "@/components/Header"
 import { searchRecipesByIngredients, getRecipeInformation } from "@/lib/spoonacular";
 import HowItWorks from "@/components/HowItWorks"
 import SearchBar from "@/components/SearchBar";
@@ -153,8 +151,6 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-white">
-    <Header />
-
       <main>
         {/* Hero Section */}
         <section className="container mx-auto px-4 py-12 text-center">
@@ -304,7 +300,6 @@ export default function Home() {
         <HowItWorks />
       </main>
 
-      <Footer />
     </div>
   )
 }
