@@ -8,11 +8,12 @@ export default function AboutPage() {
     { name: "Rafli Putra Nur Syabani", role: "237006083", image: "rafly.jpg" },
     { name: "Muhamad Rizki", role: "237006085", image: "/rizki.jpg" },
     { name: "Yusa Putra Rosdiana", role: "237006091", image: "yusa.jpg" },
-    { name: "Arya Achmad Caesar", role: "237006093", image: ".jpg" },
+    { name: "Arya Achmad Caesar", role: "237006093", image: "arya.jpg" },
+
   ];
 
   return (
-    <div className="flex flex-col min-h-screen bg-gradient-to-b from-orange-100 via-white to-orange-50">
+    <div className="flex flex-col min-h-screen bg-white">
       <Header />
       <main className="container flex-grow p-6 mx-auto">
         <h1 className="mb-6 text-5xl font-extrabold text-center text-gray-800">
@@ -28,11 +29,11 @@ export default function AboutPage() {
               key={index}
               className="flex flex-col items-center text-center"
             >
-              <div className="w-40 h-40 mb-4"> {/* Ukuran gambar diperbesar */}
+              <div className="w-40 h-40 mb-4">
                 <img
                   src={member.image}
                   alt={member.name}
-                  className="w-full h-full border-4 border-orange-500 rounded-full shadow-lg"
+                  className="w-full h-full border-4 border-orange-500 rounded-full shadow-lg object-cover"
                 />
               </div>
               <h2 className="text-xl font-bold text-gray-800">{member.name}</h2>
