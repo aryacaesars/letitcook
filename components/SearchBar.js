@@ -21,13 +21,54 @@ export default function SearchBar({
   // Gunakan data dari JSON
   const commonIngredients = commonIngredientsData.ingredients;
 
+  // Fungsi Levenshtein Distance sederhana
+  function levenshtein(a, b) {
+    const matrix = Array.from({ length: a.length + 1 }, () =>
+      Array(b.length + 1).fill(0)
+    );
+    for (let i = 0; i <= a.length; i++) matrix[i][0] = i;
+    for (let j = 0; j <= b.length; j++) matrix[0][j] = j;
+    for (let i = 1; i <= a.length; i++) {
+      for (let j = 1; j <= b.length; j++) {
+        matrix[i][j] =
+          a[i - 1] === b[j - 1]
+            ? matrix[i - 1][j - 1]
+            : Math.min(
+                matrix[i - 1][j - 1] + 1,
+                matrix[i][j - 1] + 1,
+                matrix[i - 1][j] + 1
+              );
+      }
+    }
+    return matrix[a.length][b.length];
+  }
+
   useEffect(() => {
     if (searchQuery.trim()) {
       const filtered = commonIngredients.filter(({ en, id }) =>
         en.toLowerCase().includes(searchQuery.toLowerCase()) ||
         id.toLowerCase().includes(searchQuery.toLowerCase())
       );
-      setRecommendations(filtered.slice(0, 5));
+
+      // Jika hasil filter kosong, cari ingredient terdekat (koreksi typo)
+      let typoSuggestions = [];
+      if (filtered.length === 0) {
+        typoSuggestions = commonIngredients
+          .map((ingredient) => ({
+            ...ingredient,
+            distance: Math.min(
+              levenshtein(ingredient.en.toLowerCase(), searchQuery.toLowerCase()),
+              levenshtein(ingredient.id.toLowerCase(), searchQuery.toLowerCase())
+            ),
+          }))
+          .filter((item) => item.distance <= 2) // Ambil yang mirip saja (threshold 2)
+          .sort((a, b) => a.distance - b.distance)
+          .slice(0, 5);
+      }
+
+      setRecommendations(
+        filtered.length > 0 ? filtered.slice(0, 5) : typoSuggestions
+      );
       setShowRecommendationsState(true);
     } else {
       setRecommendations([]);
@@ -133,6 +174,15 @@ export default function SearchBar({
 
       {showRecommendations && recommendations.length > 0 && (
         <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-20">
+          {/* Tampilkan pesan "Did you mean ..." jika hasil typoSuggestions */}
+          {commonIngredients.filter(({ en, id }) =>
+            en.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            id.toLowerCase().includes(searchQuery.toLowerCase())
+          ).length === 0 && (
+            <div className="px-4 py-2 text-gray-500 text-sm italic">
+              Did you mean:
+            </div>
+          )}
           {recommendations.map((ingredient, index) => (
             <button
               key={index}
